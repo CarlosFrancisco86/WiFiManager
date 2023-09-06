@@ -652,6 +652,7 @@ void WiFiManager::setupHTTPServer(){
   server->on(WM_G(R_close),      std::bind(&WiFiManager::handleClose, this));
   server->on(WM_G(R_erase),      std::bind(&WiFiManager::handleErase, this, false));
   server->on(WM_G(R_status),     std::bind(&WiFiManager::handleWiFiStatus, this));
+  //server->on(WM_G(R_resetsettings),     std::bind(&WiFiManager::handleResetSettings, this));
   server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   
   server->on(WM_G(R_update), std::bind(&WiFiManager::handleUpdate, this));
@@ -781,6 +782,11 @@ boolean  WiFiManager::startConfigPortal(char const *apName, char const *apPasswo
   #endif
 
   while(1){
+
+    //Add custom Carlos
+    if (digitalRead(8) == HIGH) {
+      break; // Break out of the while(1) loop
+    }
 
     // if timed out or abort, break
     if(configPortalHasTimeout() || abort){
@@ -1336,8 +1342,14 @@ void WiFiManager::handleRoot() {
   str.replace(FPSTR(T_t),_title);
   str.replace(FPSTR(T_v),configPortalActive ? _apName : (getWiFiHostname() + " - " + WiFi.localIP().toString())); // use ip if ap is not active for heading @todo use hostname?
   page += str;
-  page += FPSTR(HTTP_PORTAL_OPTIONS);
-  page += getMenuOut();
+  //page += FPSTR(HTTP_PORTAL_OPTIONS);
+  //Carlos
+  //page += HTTP_ROOT_MAIN;
+  page += HTTP_PORTAL_MENU[0];
+  page += HTTP_PORTAL_MENU[2];
+  //page += HTTP_PORTAL_MENU[7];
+  page += FPSTR(HTTP_ERASEBTN);
+  //page += getMenuOut();
   reportStatus(page);
   page += FPSTR(HTTP_END);
 
@@ -2012,7 +2024,7 @@ void WiFiManager::handleInfo() {
     // add esp_chip_info ?
     infos = 27;
     String infoids[] = {
-      F("esphead"),
+        F("esphead"),
       F("uptime"),
       F("chipid"),
       F("chiprev"),
@@ -2069,6 +2081,8 @@ void WiFiManager::handleInfo() {
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(DEBUG_DEV,F("Sent info page"));
   #endif
+
+  //resetSettings();
 }
 
 String WiFiManager::getInfoData(String id){
@@ -2322,6 +2336,16 @@ void WiFiManager::handleExit() {
   abort = true;
 }
 
+//Carlos 
+/*void WiFiManager::handleResetSettings() {
+  #ifdef WM_DEBUG_LEVEL
+  DEBUG_WM(DEBUG_VERBOSE,F("<- HTTP Exit"));
+  #endif
+  wm->resetSettings();
+  ESP.restart();
+}*/
+
+
 /** 
  * HTTPD CALLBACK reset page
  */
@@ -2335,6 +2359,8 @@ void WiFiManager::handleReset() {
   page += FPSTR(HTTP_END);
 
   HTTPSend(page);
+
+  resetSettings();
 
   #ifdef WM_DEBUG_LEVEL
   DEBUG_WM(F("RESETTING ESP"));

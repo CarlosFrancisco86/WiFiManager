@@ -60,6 +60,8 @@ const char R_erase[]              PROGMEM = "/erase";
 const char R_status[]             PROGMEM = "/status";
 const char R_update[]             PROGMEM = "/update";
 const char R_updatedone[]         PROGMEM = "/u";
+//Carlos
+//const char R_resetsettings[]      PROGMEN = "/rs";
 
 
 //Strings
